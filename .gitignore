@@ -1,0 +1,5 @@
+# Project exclude paths
+/.gradle/
+/Coffee Machine Simulator with Java/task/build/
+/Coffee Machine Simulator with Java/task/out/
+/Coffee Machine Simulator with Java/task/out/production/classes/
