@@ -2,89 +2,188 @@ package machine;
 
 import java.util.Scanner;
 
-/* Completed up to stage 3/7 of https://hyperskill.org/projects/33/stages/177/implement
-Write a program that does the following:
-
-1. Requests the amounts of water, milk, and coffee beans available at the moment, and then asks for the number of cups of coffee a user needs.
-2. If the coffee machine has enough supplies to make the specified amount of coffee, the program should print "Yes, I can make that amount of coffee".
-3. If the coffee machine can make more than the requested amount, the program should output "Yes, I can make that amount of coffee (and even N more than that)",
-where N is the number of additional cups of coffee that the coffee machine can make.
-4. If the available resources are insufficient to make the requested amount of coffee, the program should output "No, I can make only N cup(s) of coffee".
-
-*/
+/* Completed up to stage 4/6 of https://hyperskill.org/projects/33/stages/178/implement
+ */
 public class CoffeeMachine {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        int numberOfCups = 0, water = 0, milk = 0, beans = 0;
+        Machine machine = new Machine(400, 540, 120, 9, 550);
 
-        System.out.println("Write how many ml of water the coffee machine has: ");
-        water = scanner.nextInt();
-        System.out.println("Write how many ml of milk the coffee machine has:");
-        milk = scanner.nextInt();
-        System.out.println("Write how many grams of coffee beans the coffee machine has:");
-        beans = scanner.nextInt();
-        System.out.println("Write how many cups of coffee you will need:");
-        numberOfCups = scanner.nextInt();
+        machine.printInfo();
 
-        Order order = new Order(numberOfCups);
-        calculateResult(order, water, milk, beans);
+        System.out.println("Write action (buy, fill, take): ");
+        String action = scanner.nextLine();
 
-    }
-    // Calculates the result and prints it
-    public static void calculateResult(Order order, int water, int milk, int beans) {
-        int possibleCupsWater = water / Coffee.BASIC_COFFEE.water;
-        int possibleCupsMilk = milk / Coffee.BASIC_COFFEE.milk;
-        int possibleCupsBean = beans / Coffee.BASIC_COFFEE.beans;
+        switch (action) {
+            case "buy" -> {
+                System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: ");
+                int coffeeType = scanner.nextInt();
+                machine.buyCoffee(coffeeType);
+            }
+            case "fill" -> {
+                int water, milk, beans, cups;
+                System.out.println("Write how many ml of water you want to add:");
+                water = scanner.nextInt();
+                System.out.println("Write how many ml of milk you want to add:");
+                milk = scanner.nextInt();
+                System.out.println("Write how many grams of coffee beans you want to add:");
+                beans = scanner.nextInt();
+                System.out.println("Write how many disposable cups you want to add:");
+                cups = scanner.nextInt();
 
-        int possibleNumberOfCups = possibleCupsWater < possibleCupsMilk
-                ? Math.min(possibleCupsWater, possibleCupsBean) : Math.min(possibleCupsMilk, possibleCupsBean);
-
-        if (possibleNumberOfCups < order.numberOfCups()) {
-            System.out.printf("No, I can only make %d cup(s) of coffee", possibleNumberOfCups);
-        } else if (possibleNumberOfCups == order.numberOfCups()) {
-            System.out.println("Yes, I can make that amount of coffee");
-        } else {
-            System.out.printf("Yes, I can make that amount of coffee (and even %d more than that)", possibleNumberOfCups - order.numberOfCups());
+                machine.fillMachine(water, milk, beans, cups);
+            }
+            case "take" -> {
+                System.out.println("I gave you $" + machine.takeMoney() + "\n");
+            }
         }
+        machine.printInfo();
+        scanner.close();
     }
-}
 
+
+}
 
 /**
  * enum to hold the coffee ingredients, will be easier to add more types later on if necessary.
  */
 enum Coffee {
-    BASIC_COFFEE(200, 50, 15);
+    ESPRESSO(250, 0, 16, 4), LATTE(350, 75, 20, 7), CAPPUCCINO(200, 100, 12, 6);
 
     public final int water;   // in ml
     public final int milk;    // in ml
     public final int beans;   // in grams
+    public final int price;
 
-    Coffee(int water, int milk, int beans) {
+    Coffee(int water, int milk, int beans, int price) {
         this.water = water;
         this.milk = milk;
         this.beans = beans;
+        this.price = price;
     }
 }
 
-/**
- * Recording class for the orders, calculates totals.
- *
- * @param numberOfCups
- */
-record Order(int numberOfCups) {
+class Machine {
+    private int water, milk, beans, cups, money;
 
-    public int getTotalWater() {
-        return Coffee.BASIC_COFFEE.water * numberOfCups;
+    public Machine(int water, int milk, int beans, int cups, int money) {
+        this.water = water;
+        this.milk = milk;
+        this.beans = beans;
+        this.cups = cups;
+        this.money = money;
     }
 
-    public int getTotalMilk() {
-        return Coffee.BASIC_COFFEE.milk * numberOfCups;
+    /**
+     * Prints the current ingredients and money present in the machine.
+     */
+    public void printInfo() {
+        System.out.printf("""
+                The coffee machine has:
+                %d ml of water
+                %d ml of milk
+                %d g of coffee beans
+                %d disposable cups
+                $%d of money
+                
+                """, this.water, this.milk, this.beans, this.cups, this.money);
     }
 
-    public int getTotalBeans() {
-        return Coffee.BASIC_COFFEE.beans * numberOfCups;
+    /**
+     * Subtracts the ingredients for the coffee and adds money to the machine
+     *
+     * @param coffeeType the type of coffee bought
+     */
+    public void buyCoffee(int coffeeType) {
+        switch (coffeeType) {
+            case 1 -> {
+                water -= Coffee.ESPRESSO.water;
+                milk -= Coffee.ESPRESSO.milk;
+                beans -= Coffee.ESPRESSO.beans;
+                cups--;
+                money += Coffee.ESPRESSO.price;
+            }
+            case 2 -> {
+                water -= Coffee.LATTE.water;
+                milk -= Coffee.LATTE.milk;
+                beans -= Coffee.LATTE.beans;
+                cups--;
+                money += Coffee.LATTE.price;
+            }
+            case 3 -> {
+                water -= Coffee.CAPPUCCINO.water;
+                milk -= Coffee.CAPPUCCINO.milk;
+                beans -= Coffee.CAPPUCCINO.beans;
+                cups--;
+                money += Coffee.CAPPUCCINO.price;
+            }
+        }
     }
 
+    /**
+     * Adds the amount if water, milk, beans, cups
+     *
+     * @param water water to be added
+     * @param milk  milk to be added
+     * @param beans beans to be added
+     * @param cups  cups to be added
+     */
+    public void fillMachine(int water, int milk, int beans, int cups) {
+        this.water += water;
+        this.milk += milk;
+        this.beans += beans;
+        this.cups += cups;
+    }
+
+    /**
+     * Withdraws all the money and returns the amount withdrawn
+     *
+     * @return amount withdrawn
+     */
+    public int takeMoney() {
+        int withdrawnAmount = this.money;
+        this.money = 0;
+        return withdrawnAmount;
+    }
+
+    public int getWater() {
+        return water;
+    }
+
+    public void setWater(int water) {
+        this.water = water;
+    }
+
+    public int getMilk() {
+        return milk;
+    }
+
+    public void setMilk(int milk) {
+        this.milk = milk;
+    }
+
+    public int getBeans() {
+        return beans;
+    }
+
+    public void setBeans(int beans) {
+        this.beans = beans;
+    }
+
+    public int getCups() {
+        return cups;
+    }
+
+    public void setCups(int cups) {
+        this.cups = cups;
+    }
+
+    public int getMoney() {
+        return money;
+    }
+
+    public void setMoney(int money) {
+        this.money = money;
+    }
 }
