@@ -2,7 +2,7 @@ package machine;
 
 import java.util.Scanner;
 
-/* Completed up to stage 4/6 of https://hyperskill.org/projects/33/stages/178/implement
+/* Completed up to stage 5/6 of https://hyperskill.org/projects/33/stages/178/implement
  */
 public class CoffeeMachine {
 
@@ -10,36 +10,41 @@ public class CoffeeMachine {
         Scanner scanner = new Scanner(System.in);
         Machine machine = new Machine(400, 540, 120, 9, 550);
 
-        machine.printInfo();
 
-        System.out.println("Write action (buy, fill, take): ");
-        String action = scanner.nextLine();
+        do {
+            System.out.println("Write action (buy, fill, take, remaining, exit): ");
+            String action = scanner.nextLine();
+            switch (action) {
+                case "buy" -> {
+                    System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - to main menu: ");
+                    String input = scanner.nextLine();
+                    if (!input.equals("back")) {
+                        System.out.println(machine.buyCoffee(Integer.parseInt(input)));
+                    }
+                }
+                case "fill" -> {
+                    int water, milk, beans, cups;
+                    System.out.println("Write how many ml of water you want to add:");
+                    water = Integer.parseInt(scanner.nextLine()); // so I don't have to call nextLine() each time I use nextInt() due to the leftover newline
+                    System.out.println("Write how many ml of milk you want to add:");
+                    milk = Integer.parseInt(scanner.nextLine());
+                    System.out.println("Write how many grams of coffee beans you want to add:");
+                    beans = Integer.parseInt(scanner.nextLine());
+                    System.out.println("Write how many disposable cups you want to add:");
+                    cups = Integer.parseInt(scanner.nextLine());
 
-        switch (action) {
-            case "buy" -> {
-                System.out.println("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino: ");
-                int coffeeType = scanner.nextInt();
-                machine.buyCoffee(coffeeType);
+                    machine.fillMachine(water, milk, beans, cups);
+                }
+                case "take" -> System.out.println("I gave you $" + machine.takeMoney() + "\n");
+                case "remaining" -> machine.printInfo();
+                case "exit" -> {
+                    scanner.close();
+                    System.exit(0);
+                }
             }
-            case "fill" -> {
-                int water, milk, beans, cups;
-                System.out.println("Write how many ml of water you want to add:");
-                water = scanner.nextInt();
-                System.out.println("Write how many ml of milk you want to add:");
-                milk = scanner.nextInt();
-                System.out.println("Write how many grams of coffee beans you want to add:");
-                beans = scanner.nextInt();
-                System.out.println("Write how many disposable cups you want to add:");
-                cups = scanner.nextInt();
+        } while (true);
 
-                machine.fillMachine(water, milk, beans, cups);
-            }
-            case "take" -> {
-                System.out.println("I gave you $" + machine.takeMoney() + "\n");
-            }
-        }
-        machine.printInfo();
-        scanner.close();
+
     }
 
 
@@ -90,35 +95,70 @@ class Machine {
                 """, this.water, this.milk, this.beans, this.cups, this.money);
     }
 
+    public String canBuyCoffee(Coffee coffee) {
+        StringBuilder response = new StringBuilder();
+        if (coffee.water > this.water) {
+            response.append("water");
+        }
+        if (coffee.milk > this.milk) {
+            response.append("milk");
+        }
+        if (coffee.beans > this.beans) {
+            response.append("beans");
+        }
+        if (this.cups < 1) {
+            response.append("cups");
+        }
+        if (response.isEmpty()) {
+            return "I have enough resources, making you a coffee!";
+        } else {
+            return "Sorry, not enough " + response;
+        }
+    }
+
     /**
      * Subtracts the ingredients for the coffee and adds money to the machine
      *
      * @param coffeeType the type of coffee bought
      */
-    public void buyCoffee(int coffeeType) {
+    public String buyCoffee(int coffeeType) {
         switch (coffeeType) {
             case 1 -> {
-                water -= Coffee.ESPRESSO.water;
-                milk -= Coffee.ESPRESSO.milk;
-                beans -= Coffee.ESPRESSO.beans;
-                cups--;
-                money += Coffee.ESPRESSO.price;
+                String canBuyCoffeeResponse = canBuyCoffee(Coffee.ESPRESSO);
+                if (canBuyCoffeeResponse.contains("have enough")) {
+                    water -= Coffee.ESPRESSO.water;
+                    milk -= Coffee.ESPRESSO.milk;
+                    beans -= Coffee.ESPRESSO.beans;
+                    cups--;
+                    money += Coffee.ESPRESSO.price;
+                }
+                return canBuyCoffeeResponse;
             }
             case 2 -> {
-                water -= Coffee.LATTE.water;
-                milk -= Coffee.LATTE.milk;
-                beans -= Coffee.LATTE.beans;
-                cups--;
-                money += Coffee.LATTE.price;
+                String canBuyCoffeeResponse = canBuyCoffee(Coffee.LATTE);
+                if (canBuyCoffeeResponse.contains("have enough")) {
+                    water -= Coffee.LATTE.water;
+                    milk -= Coffee.LATTE.milk;
+                    beans -= Coffee.LATTE.beans;
+                    cups--;
+                    money += Coffee.LATTE.price;
+                }
+                return canBuyCoffeeResponse;
+
             }
             case 3 -> {
-                water -= Coffee.CAPPUCCINO.water;
-                milk -= Coffee.CAPPUCCINO.milk;
-                beans -= Coffee.CAPPUCCINO.beans;
-                cups--;
-                money += Coffee.CAPPUCCINO.price;
+                String canBuyCoffeeResponse = canBuyCoffee(Coffee.CAPPUCCINO);
+                if (canBuyCoffeeResponse.contains("have enough")) {
+                    water -= Coffee.CAPPUCCINO.water;
+                    milk -= Coffee.CAPPUCCINO.milk;
+                    beans -= Coffee.CAPPUCCINO.beans;
+                    cups--;
+                    money += Coffee.CAPPUCCINO.price;
+                }
+                return canBuyCoffeeResponse;
             }
         }
+        return "Wrong coffee type.";
     }
 
     /**

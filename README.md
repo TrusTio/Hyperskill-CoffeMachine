@@ -1,1 +1,3 @@
 Hyperskill's "Coffee Machine Simulator" Java study project - https://hyperskill.org/projects/33
+
+Java code is located at [Coffee Machine Simulator with Java/task/src/machine/CoffeeMachine.java](https://github.com/TrusTio/Hyperskill-CoffeMachine/blob/master/Coffee%20Machine%20Simulator%20with%20Java/task/src/machine/CoffeeMachine.java "Coffee Machine Simulator with Java/task/src/machine/CoffeeMachine.java")
