@@ -2,7 +2,7 @@ package machine;
 
 import java.util.Scanner;
 
-/* Completed up to stage 5/6 of https://hyperskill.org/projects/33/stages/178/implement
+/* Completed up to stage 6/6 of https://hyperskill.org/projects/33/stages/178/implement
  */
 public class CoffeeMachine {
 
@@ -12,7 +12,7 @@ public class CoffeeMachine {
 
 
         do {
-            System.out.println("Write action (buy, fill, take, remaining, exit): ");
+            System.out.println("Write action (buy, fill, take, clean, remaining, exit): ");
             String action = scanner.nextLine();
             switch (action) {
                 case "buy" -> {
@@ -36,6 +36,7 @@ public class CoffeeMachine {
                     machine.fillMachine(water, milk, beans, cups);
                 }
                 case "take" -> System.out.println("I gave you $" + machine.takeMoney() + "\n");
+                case "clean" -> System.out.println(machine.cleanMachine());
                 case "remaining" -> machine.printInfo();
                 case "exit" -> {
                     scanner.close();
@@ -69,8 +70,11 @@ enum Coffee {
     }
 }
 
+/**
+ * Machine class to store the amount if ingredients and methods to do various tasks
+ */
 class Machine {
-    private int water, milk, beans, cups, money;
+    private int water, milk, beans, cups, money, cupsMade = 0;
 
     public Machine(int water, int milk, int beans, int cups, int money) {
         this.water = water;
@@ -95,8 +99,17 @@ class Machine {
                 """, this.water, this.milk, this.beans, this.cups, this.money);
     }
 
+    /**
+     * Checks if there are enough  ingredients to buy coffee.
+     *
+     * @param coffee type of coffee to check for
+     * @return String confirming if a coffee was made or what's missing.
+     */
     public String canBuyCoffee(Coffee coffee) {
         StringBuilder response = new StringBuilder();
+        if (cupsMade >= 10) {
+            return "I need cleaning!";
+        }
         if (coffee.water > this.water) {
             response.append("water");
         }
@@ -131,6 +144,7 @@ class Machine {
                     beans -= Coffee.ESPRESSO.beans;
                     cups--;
                     money += Coffee.ESPRESSO.price;
+                    cupsMade++;
                 }
                 return canBuyCoffeeResponse;
             }
@@ -142,6 +156,7 @@ class Machine {
                     beans -= Coffee.LATTE.beans;
                     cups--;
                     money += Coffee.LATTE.price;
+                    cupsMade++;
                 }
                 return canBuyCoffeeResponse;
 
@@ -154,6 +169,7 @@ class Machine {
                     beans -= Coffee.CAPPUCCINO.beans;
                     cups--;
                     money += Coffee.CAPPUCCINO.price;
+                    cupsMade++;
                 }
                 return canBuyCoffeeResponse;
             }
@@ -174,6 +190,16 @@ class Machine {
         this.milk += milk;
         this.beans += beans;
         this.cups += cups;
+    }
+
+    /**
+     * Cleans the machine by setting the cupsMade to 0;
+     *
+     * @return String confirming the cleaning.
+     */
+    public String cleanMachine() {
+        cupsMade = 0;
+        return "I have been cleaned!";
     }
 
     /**
